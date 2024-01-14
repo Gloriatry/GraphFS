@@ -132,8 +132,7 @@ class NeighborSampler(object):
 
 
 class DistSAGE(nn.Module):
-    def __init__(self, in_feats, n_hidden, n_classes, n_layers,
-                 activation, dropout):
+    def __init__(self, in_feats, n_hidden, n_classes, n_layers, activation, dropout):
         super().__init__()
         self.n_layers = n_layers
         self.n_hidden = n_hidden
@@ -216,18 +215,7 @@ class STGDistSAGE(DistSAGE):
         self.mu = self.FeatureSelector.mu
         self.sigma = self.FeatureSelector.sigma
         
-    def forward(self, feed_dict):
-        x = self.FeatureSelector(self._get_input(feed_dict))
-        logits = super().forward(x)
-        if self.training:
-            loss = self.loss(logits, self._get_label(feed_dict))
-            reg = th.mean(self.reg((self.mu + 0.5)/self.sigma)) 
-            total_loss = loss + self.lam * reg 
-            return total_loss, dict(), dict() 
-        else:
-            return self._compose_output(logits)
-
-    def _compose_output(self, logits):
-        value = self.softmax(logits)
-        _, pred = value.max(dim=1)
-        return dict(prob=value, pred=pred, logits=logits)
+    def forward(self, blocks, x):
+        x = self.FeatureSelector(x)
+        logits = super().forward(blocks, x)
+        return logits

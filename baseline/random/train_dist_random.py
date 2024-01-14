@@ -34,7 +34,7 @@ import torch.optim as optim
 import torch.multiprocessing as mp
 from torch.utils.data import DataLoader
 
-from models.sage import DistSAGE, NeighborSampler
+from models.sage import DistSAGE, NeighborSampler, STGDistSAGE
 from models.gcn import GCN
 from models.gat import GAT
 from utils import *
@@ -249,8 +249,11 @@ def run(args, device, data):
         model = GCN(in_feats, args.num_hidden, n_classes, args.num_layers,
                     F.relu, args.dropout)
     elif args.model.lower() == 'sage':
-        model = DistSAGE(in_feats, args.num_hidden, n_classes, args.num_layers,
-                         F.relu, args.dropout)
+        if args.graphfs:
+            model = STGDistSAGE(in_feats, args.num_hidden, n_classes, args.num_layers, F.relu, args.dropout, device,
+                                args.sigma, args.lam)
+        else:
+            model = DistSAGE(in_feats, args.num_hidden, n_classes, args.num_layers, F.relu, args.dropout)
     elif args.model.lower() == 'gat':
         heads = ([args.num_heads] * args.num_layers) + [args.num_out_heads]
         model = GAT(args.num_layers, in_feats, args.num_hidden, n_classes,
@@ -564,6 +567,13 @@ if __name__ == '__main__':
                         type=str,
                         default='nccl',
                         help='pytorch distributed backend')
+    
+    parser.add_argument('--graphfs',
+                        action='store_true',
+                        help='run the graphfs mode')
+    parser.add_argument('--sigma', type=float, default=1.0)
+    parser.add_argument('--lam', type=float, default=0.1)
+
     args = parser.parse_args()
 
     print(args)

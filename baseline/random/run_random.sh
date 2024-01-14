@@ -27,6 +27,11 @@ LR=0.003
 DROPOUT=0.0
 PROB="prob"
 
+# the parameters of sampling
+# graphfs
+SIGMA=0.5
+LAM=0.5
+
 SUFFIX="sampling"
 
 LOGDIR="${DIR}/${BASELINE}/${DATASET}.${PART_METHOD}.${NUM_PARTS}.log.${N_LAYERS}layers.${MODEL}.${SUFFIX}"
@@ -68,4 +73,7 @@ cd ${WORKSPACE} && /home/yp/.conda/envs/dgs/bin/python launch.py \
     --num-out-heads 1 \
     --in-drop 0.6 \
     --attn-drop 0.6 \
-    --negative-slope 0.2 "
+    --negative-slope 0.2 \
+    --graphfs \
+    --sigma ${SIGMA} \
+    --lam ${LAM} "
